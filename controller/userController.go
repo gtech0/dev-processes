@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"dev-processes/dto"
 	"dev-processes/initializer"
 	"dev-processes/model"
 	"dev-processes/service"
@@ -20,11 +21,17 @@ func NewUserController() *UserController {
 	return &UserController{}
 }
 
+// Signup godoc
+// @Summary      Create account
+// @Description  create user account
+// @Accept       json
+// @Produce      json
+// @Param   	 payload body dto.UserDto false "Auth data"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /signup [post]
 func (*UserController) Signup(ctx *gin.Context) {
-	var body struct {
-		Login    string
-		Password string
-	}
+	body := dto.UserDto{}
 
 	if err := ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -67,11 +74,17 @@ func (*UserController) Signup(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// Login godoc
+// @Summary      Login
+// @Description  login in account
+// @Accept       json
+// @Produce      json
+// @Param   	 payload body dto.UserDto false "Auth data"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /login [post]
 func (*UserController) Login(ctx *gin.Context) {
-	var body struct {
-		Login    string
-		Password string
-	}
+	body := dto.UserDto{}
 
 	if err := ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -128,10 +141,17 @@ func (*UserController) Login(ctx *gin.Context) {
 	})
 }
 
+// RefreshToken godoc
+// @Summary      Refresh
+// @Description  refresh token
+// @Accept       json
+// @Produce      json
+// @Param   	 payload body dto.RefreshTokenDto false "Token"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /refresh [post]
 func (*UserController) RefreshToken(ctx *gin.Context) {
-	var body struct {
-		RefreshToken string
-	}
+	body := dto.RefreshTokenDto{}
 
 	if err := ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -165,6 +185,17 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 	})
 }
 
+// Logout godoc
+// @Security 	 ApiKeyAuth
+// @Summary      Logout
+// @Description  logout
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      401 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /logout [post]
 func (u *UserController) Logout(ctx *gin.Context) {
 	tokenString, err := service.ExtractToken(ctx.GetHeader("Authorization"))
 	if err != nil {
@@ -176,6 +207,16 @@ func (u *UserController) Logout(ctx *gin.Context) {
 	initializer.DB.Model(model.Token{}).Where(model.Token{Token: tokenString}).Updates(model.Token{Revoked: true})
 }
 
+// ChangePassword godoc
+// @Security 	 ApiKeyAuth
+// @Summary      Change password
+// @Description  change your password
+// @Accept       json
+// @Produce      json
+// @Param   	 payload body dto.PasswordDto false "New password"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /password [patch]
 func (u *UserController) ChangePassword(ctx *gin.Context) {
 	user, exists := ctx.Get("user")
 	if !exists {
@@ -185,9 +226,7 @@ func (u *UserController) ChangePassword(ctx *gin.Context) {
 		return
 	}
 
-	var body struct {
-		NewPassword string
-	}
+	body := dto.PasswordDto{}
 
 	if err := ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

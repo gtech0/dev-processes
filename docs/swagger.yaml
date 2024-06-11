@@ -1,0 +1,157 @@
+basePath: /api
+definitions:
+  dto.PasswordDto:
+    properties:
+      newPassword:
+        type: string
+    type: object
+  dto.RefreshTokenDto:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  dto.UserDto:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  model.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8001
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: User API
+  version: "0.01"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: login in account
+      parameters:
+      - description: Auth data
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Login
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout
+  /password:
+    patch:
+      consumes:
+      - application/json
+      description: change your password
+      parameters:
+      - description: New password
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.PasswordDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Change password
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: refresh token
+      parameters:
+      - description: Token
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Refresh
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: create user account
+      parameters:
+      - description: Auth data
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Create account
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
