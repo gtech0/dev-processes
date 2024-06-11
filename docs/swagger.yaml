@@ -61,8 +61,6 @@ paths:
       summary: Login
   /logout:
     post:
-      consumes:
-      - application/json
       description: logout
       produces:
       - application/json
@@ -77,12 +75,16 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - Bearer: []
       summary: Logout
   /password:
     patch:
@@ -104,8 +106,12 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
       security:
-      - ApiKeyAuth: []
+      - Bearer: []
       summary: Change password
   /refresh:
     post:
@@ -150,7 +156,8 @@ paths:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Create account
 securityDefinitions:
-  ApiKeyAuth:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
     in: header
     name: Authorization
     type: apiKey

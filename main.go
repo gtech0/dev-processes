@@ -32,9 +32,10 @@ func init() {
 // @host      localhost:8001
 // @BasePath  /api
 
-// @securityDefinitions.apikey ApiKeyAuth
+// @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/

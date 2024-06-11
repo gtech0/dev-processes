@@ -186,14 +186,14 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 }
 
 // Logout godoc
-// @Security 	 ApiKeyAuth
+// @Security 	 Bearer
 // @Summary      Logout
 // @Description  logout
-// @Accept       json
 // @Produce      json
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
 // @Failure      401 {object} model.ErrorResponse
+// @Failure      403 {object} model.ErrorResponse
 // @Failure      500 {object} model.ErrorResponse
 // @Router       /logout [post]
 func (u *UserController) Logout(ctx *gin.Context) {
@@ -208,7 +208,7 @@ func (u *UserController) Logout(ctx *gin.Context) {
 }
 
 // ChangePassword godoc
-// @Security 	 ApiKeyAuth
+// @Security 	 Bearer
 // @Summary      Change password
 // @Description  change your password
 // @Accept       json
@@ -216,6 +216,7 @@ func (u *UserController) Logout(ctx *gin.Context) {
 // @Param   	 payload body dto.PasswordDto false "New password"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
+// @Failure      403 {object} model.ErrorResponse
 // @Router       /password [patch]
 func (u *UserController) ChangePassword(ctx *gin.Context) {
 	user, exists := ctx.Get("user")
