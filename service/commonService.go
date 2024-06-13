@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -54,18 +53,15 @@ func ExtractToken(header string) (string, error) {
 	return token[1], nil
 }
 
-func IsCorrectRole(ctx *gin.Context, role model.Role) bool {
+func IsCorrectRole(ctx *gin.Context, role model.Role) error {
 	user, exists := ctx.Get("user")
 	if !exists {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "User not found in context",
-		})
-		return false
+		return errors.New("user isn't found in context")
 	}
 
 	if user.(model.User).Role != role {
-		return false
+		return errors.New("unauthorized access")
 	}
 
-	return true
+	return nil
 }

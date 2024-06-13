@@ -5,5 +5,5 @@ import "gorm.io/gorm"
 type Stream struct {
 	gorm.Model
 	Name string `gorm:"unique;not null;default:null"`
-	Code string `gorm:"size:10"`
+	Code string `gorm:"unique;size:10"`
 }

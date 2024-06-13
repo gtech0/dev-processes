@@ -80,18 +80,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
       security:
       - Bearer: []
       summary: Create student stream
@@ -117,21 +105,39 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
       security:
       - Bearer: []
       summary: Create invite code
+      tags:
+      - Stream
+  /stream/delete/{code}:
+    post:
+      consumes:
+      - application/json
+      description: delete student from stream
+      parameters:
+      - description: Invite code
+        in: path
+        name: code
+        required: true
+        type: integer
+      - description: Student ids
+        in: body
+        name: payload
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Delete student from stream
       tags:
       - Stream
   /stream/get:
@@ -144,22 +150,10 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.StreamDto'
+              type: string
             type: array
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       security:
@@ -185,18 +179,6 @@ paths:
             $ref: '#/definitions/dto.StreamGetDto'
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       security:

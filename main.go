@@ -63,6 +63,7 @@ func main() {
 		stream.POST("/create/:streamName", middleware.RequireAuth, streamController.CreateInviteCode)
 		stream.GET("/get/:code", middleware.RequireAuth, streamController.GetStreamByCode)
 		stream.POST("/register/:code", streamController.RegisterUserInStream)
+		stream.POST("/delete/:code", middleware.RequireAuth, streamController.DeleteStudentFromStream)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

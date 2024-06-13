@@ -28,14 +28,11 @@ func NewStreamController() *StreamController {
 // @Param   	 payload body dto.StreamDto false "stream name"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      401 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
-// @Failure      500 {object} model.ErrorResponse
 // @Router       /stream/create [post]
 func (s *StreamController) CreateStream(ctx *gin.Context) {
-	if !service.IsCorrectRole(ctx, model.Admin) {
+	if err := service.IsCorrectRole(ctx, model.Admin); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized access",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -70,22 +67,19 @@ func (s *StreamController) CreateStream(ctx *gin.Context) {
 // @Summary      Get stream names
 // @Description  get stream names sorted by creation date
 // @Produce      json
-// @Success      200 {array}  dto.StreamDto
+// @Success      200 {array}  string
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      401 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
-// @Failure      500 {object} model.ErrorResponse
 // @Router       /stream/get [get]
 func (s *StreamController) GetStreamNames(ctx *gin.Context) {
-	if !service.IsCorrectRole(ctx, model.Admin) {
+	if err := service.IsCorrectRole(ctx, model.Admin); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized access",
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var streams []dto.StreamDto
-	err := database.DB.Model(model.Stream{}).Order("created_at asc").Find(&streams).Error
+	var streams []string
+	err := database.DB.Model(model.Stream{}).Order("created_at asc").Select("name").Find(&streams).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -104,14 +98,11 @@ func (s *StreamController) GetStreamNames(ctx *gin.Context) {
 // @Param        streamName path int true "Stream name"
 // @Success      200 {object} dto.InviteCodeDto
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      401 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
-// @Failure      500 {object} model.ErrorResponse
 // @Router       /stream/create/{streamName} [post]
 func (s *StreamController) CreateInviteCode(ctx *gin.Context) {
-	if !service.IsCorrectRole(ctx, model.Admin) {
+	if err := service.IsCorrectRole(ctx, model.Admin); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized access",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -137,9 +128,6 @@ func (s *StreamController) CreateInviteCode(ctx *gin.Context) {
 // @Param        code path int true "Invite code"
 // @Success      200 {object} dto.StreamGetDto
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      401 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
-// @Failure      500 {object} model.ErrorResponse
 // @Router       /stream/get/{code} [get]
 func (s *StreamController) GetStreamByCode(ctx *gin.Context) {
 	code := ctx.Param("code")
@@ -228,8 +216,8 @@ func (*StreamController) RegisterUserInStream(ctx *gin.Context) {
 
 	code := ctx.Param("code")
 
-	var stream model.Stream
-	err = database.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).First(&stream).Error
+	var streamName string
+	err = database.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).Select("name").First(&streamName).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -243,7 +231,7 @@ func (*StreamController) RegisterUserInStream(ctx *gin.Context) {
 		Password:    string(hash),
 		Role:        model.Student,
 		Deactivated: false,
-		StreamName:  null.StringFrom(stream.Name),
+		StreamName:  null.StringFrom(streamName),
 		Comment:     null.StringFromPtr(nil),
 	}
 
@@ -251,6 +239,55 @@ func (*StreamController) RegisterUserInStream(ctx *gin.Context) {
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create user",
+		})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+// DeleteStudentFromStream godoc
+// @Tags         Stream
+// @Summary      Delete student from stream
+// @Description  delete student from stream
+// @Accept       json
+// @Produce      json
+// @Param        code path int true "Invite code"
+// @Param   	 payload body []string false "Student ids"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /stream/delete/{code} [post]
+func (*StreamController) DeleteStudentFromStream(ctx *gin.Context) {
+	if err := service.IsCorrectRole(ctx, model.Admin); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	var body []string
+	if err := ctx.Bind(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	code := ctx.Param("code")
+	var streamName string
+	err := database.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).Select("name").First(&streamName).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err = database.DB.Model(model.User{}).
+		Where("stream_name = ? AND id IN ?", null.StringFrom(streamName), body).
+		Update("stream_name", null.StringFromPtr(nil)).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
