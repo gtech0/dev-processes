@@ -59,6 +59,7 @@ func main() {
 		stream.POST("/create", middleware.RequireAuth, streamController.CreateStream)
 		stream.GET("/get", middleware.RequireAuth, streamController.GetStreamNames)
 		stream.POST("/create/:streamName", middleware.RequireAuth, streamController.CreateInviteCode)
+		stream.GET("/get/:code", middleware.RequireAuth, streamController.GetStreamByCode)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

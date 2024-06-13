@@ -6,6 +6,7 @@ import (
 	"dev-processes/model"
 	"dev-processes/service"
 	"github.com/gin-gonic/gin"
+	"github.com/guregu/null/v5"
 	"math/rand"
 	"net/http"
 	"time"
@@ -124,6 +125,43 @@ func (s *StreamController) CreateInviteCode(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, code)
+}
+
+// GetStreamByCode godoc
+// @Tags         Stream
+// @Security 	 Bearer
+// @Summary      Get stream with invite code
+// @Description  get stream using invite code
+// @Produce      json
+// @Param        code path int true "Invite code"
+// @Success      200 {object} dto.StreamGetDto
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      401 {object} model.ErrorResponse
+// @Failure      403 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /stream/get/{code} [get]
+func (s *StreamController) GetStreamByCode(ctx *gin.Context) {
+	code := ctx.Param("code")
+
+	var stream model.Stream
+	err := initializer.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).First(&stream).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	var streamDto dto.StreamGetDto
+	streamDto.Name = stream.Name
+
+	err = initializer.DB.Model(model.User{}).Where(&model.User{StreamName: null.StringFrom(stream.Name)}).Count(&streamDto.PeopleNum).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	ctx.JSON(http.StatusOK, streamDto)
 }
 
 func generateRandString() string {

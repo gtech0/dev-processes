@@ -20,6 +20,13 @@ definitions:
       name:
         type: string
     type: object
+  dto.StreamGetDto:
+    properties:
+      name:
+        type: string
+      peopleNum:
+        type: integer
+    type: object
   dto.UserDto:
     properties:
       login:
@@ -158,6 +165,43 @@ paths:
       security:
       - Bearer: []
       summary: Get stream names
+      tags:
+      - Stream
+  /stream/get/{code}:
+    get:
+      description: get stream using invite code
+      parameters:
+      - description: Invite code
+        in: path
+        name: code
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StreamGetDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get stream with invite code
       tags:
       - Stream
   /user/login:
