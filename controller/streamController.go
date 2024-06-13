@@ -31,15 +31,14 @@ func NewStreamController() *StreamController {
 // @Failure      500 {object} model.ErrorResponse
 // @Router       /stream/create [post]
 func (s *StreamController) CreateStream(ctx *gin.Context) {
-	body := dto.StreamDto{}
-
-	if !service.IsCorrectRole(ctx, "Admin") {
+	if !service.IsCorrectRole(ctx, model.Admin) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Unauthorized access",
 		})
 		return
 	}
 
+	body := dto.StreamDto{}
 	if err := ctx.Bind(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -48,7 +47,7 @@ func (s *StreamController) CreateStream(ctx *gin.Context) {
 	}
 
 	stream := model.Stream{
-		Name: body.StreamName,
+		Name: body.Name,
 		Code: generateRandString(),
 	}
 
@@ -61,6 +60,37 @@ func (s *StreamController) CreateStream(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusOK)
+}
+
+// GetStreamNames godoc
+// @Tags         Stream
+// @Security 	 Bearer
+// @Summary      Get stream names
+// @Description  get stream names sorted by creation date
+// @Produce      json
+// @Success      200 {array}  dto.StreamDto
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      401 {object} model.ErrorResponse
+// @Failure      403 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /stream/get [get]
+func (s *StreamController) GetStreamNames(ctx *gin.Context) {
+	if !service.IsCorrectRole(ctx, model.Admin) {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized access",
+		})
+		return
+	}
+
+	var streams []dto.StreamDto
+	err := initializer.DB.Model(model.Stream{}).Order("created_at asc").Find(&streams).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	ctx.JSON(http.StatusOK, streams)
 }
 
 func generateRandString() string {

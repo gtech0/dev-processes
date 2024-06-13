@@ -12,7 +12,7 @@ definitions:
     type: object
   dto.StreamDto:
     properties:
-      streamName:
+      name:
         type: string
     type: object
   dto.UserDto:
@@ -25,6 +25,13 @@ definitions:
   model.ErrorResponse:
     properties:
       error:
+        type: string
+    type: object
+  model.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
 externalDocs:
@@ -76,6 +83,39 @@ paths:
       security:
       - Bearer: []
       summary: Create student stream
+      tags:
+      - Stream
+  /stream/get:
+    get:
+      description: get stream names sorted by creation date
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.StreamDto'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get stream names
       tags:
       - Stream
   /user/login:
@@ -175,6 +215,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.TokenPair'
         "400":
           description: Bad Request
           schema:

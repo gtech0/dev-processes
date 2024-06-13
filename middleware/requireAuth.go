@@ -35,7 +35,7 @@ func RequireAuth(ctx *gin.Context) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		var user model.User
-		initializer.DB.First(&user, claims["sub"])
+		initializer.DB.Model(model.User{}).First(&user, claims["sub"])
 		if user.ID == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "User not found",

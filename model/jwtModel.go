@@ -10,6 +10,6 @@ type TokenPair struct {
 type Token struct {
 	gorm.Model
 	UserID  uint
-	Token   string `gorm:"unique;not null"`
+	Token   string `gorm:"unique;not null;default:null"`
 	Revoked bool
 }

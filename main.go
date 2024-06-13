@@ -57,6 +57,7 @@ func main() {
 	stream := router.Group("/api/stream")
 	{
 		stream.POST("/create", middleware.RequireAuth, streamController.CreateStream)
+		stream.GET("/get", middleware.RequireAuth, streamController.GetStreamNames)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

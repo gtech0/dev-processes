@@ -1,19 +1,13 @@
 package model
 
-type Role int
-
-func (r Role) String() string {
-	return roles[r]
-}
-
-const (
-	Admin Role = iota
-	Dean
-	Student
+import (
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var roles = []string{
-	Admin:   "Admin",
-	Dean:    "Dean",
-	Student: "Student",
-}
+type Role string
+
+const (
+	Admin   Role = "Admin"
+	Dean    Role = "Dean"
+	Student Role = "Student"
+)

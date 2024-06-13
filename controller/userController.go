@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/guregu/null/v5"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"os"
@@ -68,8 +69,10 @@ func (*UserController) Signup(ctx *gin.Context) {
 		Surname:     "Алексеевич",
 		Login:       body.Login,
 		Password:    string(hash),
-		Role:        model.Admin.String(),
+		Role:        model.Admin,
 		Deactivated: false,
+		StreamName:  null.StringFromPtr(nil),
+		Comment:     null.StringFromPtr(nil),
 	}
 
 	result := initializer.DB.Create(&user)
@@ -158,7 +161,7 @@ func (*UserController) Login(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param   	 payload body dto.RefreshTokenDto false "Token"
-// @Success      200
+// @Success      200 {object} model.TokenPair
 // @Failure      400 {object} model.ErrorResponse
 // @Router       /user/refresh [post]
 func (*UserController) RefreshToken(ctx *gin.Context) {

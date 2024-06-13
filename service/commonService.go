@@ -54,7 +54,7 @@ func ExtractToken(header string) (string, error) {
 	return token[1], nil
 }
 
-func IsCorrectRole(ctx *gin.Context, role string) bool {
+func IsCorrectRole(ctx *gin.Context, role model.Role) bool {
 	user, exists := ctx.Get("user")
 	if !exists {
 		ctx.JSON(http.StatusBadRequest, gin.H{
