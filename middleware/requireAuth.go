@@ -44,7 +44,14 @@ func RequireAuth(ctx *gin.Context) {
 		}
 
 		var body model.Token
-		initializer.DB.Where(&model.Token{Token: tokenString, UserID: user.ID}).First(&body)
+		err = initializer.DB.Where(&model.Token{Token: tokenString, UserID: user.ID}).First(&body).Error
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "Unauthorized",
+			})
+			return
+		}
+
 		if body.Revoked {
 			ctx.AbortWithStatus(http.StatusForbidden)
 			return

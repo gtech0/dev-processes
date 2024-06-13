@@ -22,14 +22,14 @@ func NewUserController() *UserController {
 }
 
 // Signup godoc
-// @Summary      Create account
-// @Description  create user account
+// @Summary      Create admin account
+// @Description  create admin account
 // @Accept       json
 // @Produce      json
 // @Param   	 payload body dto.UserDto false "Auth data"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Router       /signup [post]
+// @Router       /user/signup [post]
 func (*UserController) Signup(ctx *gin.Context) {
 	body := dto.UserDto{}
 
@@ -62,7 +62,15 @@ func (*UserController) Signup(ctx *gin.Context) {
 		return
 	}
 
-	user := model.User{Login: body.Login, Password: string(hash)}
+	user := model.User{
+		Name:        "Олег",
+		Surname:     "Алексеевич",
+		Login:       body.Login,
+		Password:    string(hash),
+		Role:        model.Admin.String(),
+		Deactivated: false,
+	}
+
 	result := initializer.DB.Create(&user)
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -82,7 +90,7 @@ func (*UserController) Signup(ctx *gin.Context) {
 // @Param   	 payload body dto.UserDto false "Auth data"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Router       /login [post]
+// @Router       /user/login [post]
 func (*UserController) Login(ctx *gin.Context) {
 	body := dto.UserDto{}
 
@@ -119,7 +127,7 @@ func (*UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := createToken(user.ID, "ACCESS_TOKEN")
+	accessToken, err := createToken(user, "ACCESS_TOKEN")
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
@@ -127,7 +135,7 @@ func (*UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	refreshToken, err := createToken(user.ID, "REFRESH_TOKEN")
+	refreshToken, err := createToken(user, "REFRESH_TOKEN")
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
@@ -149,7 +157,7 @@ func (*UserController) Login(ctx *gin.Context) {
 // @Param   	 payload body dto.RefreshTokenDto false "Token"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Router       /refresh [post]
+// @Router       /user/refresh [post]
 func (*UserController) RefreshToken(ctx *gin.Context) {
 	body := dto.RefreshTokenDto{}
 
@@ -160,7 +168,13 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 		return
 	}
 
-	service.ValidateRefreshToken(ctx, body.RefreshToken)
+	err := service.ValidateRefreshToken(ctx, body.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
 	user, exists := ctx.Get("user")
 	if !exists {
@@ -170,8 +184,8 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 		return
 	}
 
-	err := revokeAllUserTokens(user.(model.User).ID)
-	accessToken, err := createToken(user.(model.User).ID, "ACCESS_TOKEN")
+	err = revokeAllUserTokens(user.(model.User).ID)
+	accessToken, err := createToken(user.(model.User), "ACCESS_TOKEN")
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
@@ -195,7 +209,7 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 // @Failure      401 {object} model.ErrorResponse
 // @Failure      403 {object} model.ErrorResponse
 // @Failure      500 {object} model.ErrorResponse
-// @Router       /logout [post]
+// @Router       /user/logout [post]
 func (u *UserController) Logout(ctx *gin.Context) {
 	tokenString, err := service.ExtractToken(ctx.GetHeader("Authorization"))
 	if err != nil {
@@ -217,7 +231,7 @@ func (u *UserController) Logout(ctx *gin.Context) {
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
 // @Failure      403 {object} model.ErrorResponse
-// @Router       /password [patch]
+// @Router       /user/password [patch]
 func (u *UserController) ChangePassword(ctx *gin.Context) {
 	user, exists := ctx.Get("user")
 	if !exists {
@@ -260,14 +274,14 @@ func (u *UserController) ChangePassword(ctx *gin.Context) {
 	}
 }
 
-func createToken(userId uint, tokenType string) (string, error) {
+func createToken(user model.User, tokenType string) (string, error) {
 	tokenTime, err := strconv.Atoi(os.Getenv(tokenType))
 	if err != nil {
 		return "", err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userId,
+		"sub": user.ID,
 		"exp": time.Now().Add(time.Second * time.Duration(tokenTime)).Unix(),
 	})
 
@@ -281,7 +295,7 @@ func createToken(userId uint, tokenType string) (string, error) {
 	}
 
 	if err = initializer.DB.Save(&model.Token{
-		UserID:  userId,
+		UserID:  user.ID,
 		Token:   tokenString,
 		Revoked: false,
 	}).Error; err != nil {

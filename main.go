@@ -44,14 +44,21 @@ func main() {
 	router.Use(cors.Default())
 
 	userController := controller.NewUserController()
-	api := router.Group("/api")
+	streamController := controller.NewStreamController()
+	user := router.Group("/api/user")
 	{
-		api.POST("/signup", userController.Signup)
-		api.POST("/login", userController.Login)
-		api.POST("/refresh", userController.RefreshToken)
-		api.POST("/logout", middleware.RequireAuth, userController.Logout)
-		api.PATCH("/password", middleware.RequireAuth, userController.ChangePassword)
+		user.POST("/signup", userController.Signup)
+		user.POST("/login", userController.Login)
+		user.POST("/refresh", userController.RefreshToken)
+		user.POST("/logout", middleware.RequireAuth, userController.Logout)
+		user.PATCH("/password", middleware.RequireAuth, userController.ChangePassword)
 	}
+
+	stream := router.Group("/api/stream")
+	{
+		stream.POST("/create", middleware.RequireAuth, streamController.CreateStream)
+	}
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err := router.Run(); err != nil {
