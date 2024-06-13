@@ -93,6 +93,39 @@ func (s *StreamController) GetStreamNames(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, streams)
 }
 
+// CreateInviteCode godoc
+// @Tags         Stream
+// @Security 	 Bearer
+// @Summary      Create invite code
+// @Description  create invite code
+// @Produce      json
+// @Param        streamName path int true "Stream name"
+// @Success      200 {object} dto.InviteCodeDto
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      401 {object} model.ErrorResponse
+// @Failure      403 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /stream/create/{streamName} [post]
+func (s *StreamController) CreateInviteCode(ctx *gin.Context) {
+	if !service.IsCorrectRole(ctx, model.Admin) {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized access",
+		})
+		return
+	}
+
+	streamName := ctx.Param("streamName")
+	var code dto.InviteCodeDto
+	err := initializer.DB.Model(model.Stream{}).Where(&model.Stream{Name: streamName}).First(&code).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	ctx.JSON(http.StatusOK, code)
+}
+
 func generateRandString() string {
 	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
 

@@ -1,5 +1,10 @@
 basePath: /api
 definitions:
+  dto.InviteCodeDto:
+    properties:
+      code:
+        type: string
+    type: object
   dto.PasswordDto:
     properties:
       newPassword:
@@ -83,6 +88,43 @@ paths:
       security:
       - Bearer: []
       summary: Create student stream
+      tags:
+      - Stream
+  /stream/create/{streamName}:
+    post:
+      description: create invite code
+      parameters:
+      - description: Stream name
+        in: path
+        name: streamName
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.InviteCodeDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create invite code
       tags:
       - Stream
   /stream/get:
