@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"dev-processes/initializer"
+	"dev-processes/database"
 	"dev-processes/model"
 	"dev-processes/service"
 	"fmt"
@@ -35,7 +35,7 @@ func RequireAuth(ctx *gin.Context) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		var user model.User
-		initializer.DB.Model(model.User{}).First(&user, claims["sub"])
+		database.DB.Model(model.User{}).First(&user, claims["sub"])
 		if user.ID == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "User not found",
@@ -44,7 +44,7 @@ func RequireAuth(ctx *gin.Context) {
 		}
 
 		var body model.Token
-		err = initializer.DB.Where(&model.Token{Token: tokenString, UserID: user.ID}).First(&body).Error
+		err = database.DB.Where(&model.Token{Token: tokenString, UserID: user.ID}).First(&body).Error
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "Unauthorized",
@@ -59,7 +59,7 @@ func RequireAuth(ctx *gin.Context) {
 
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			body.Revoked = true
-			err = initializer.DB.Save(&body).Error
+			err = database.DB.Save(&body).Error
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{
 					"error": err.Error(),

@@ -204,6 +204,34 @@ paths:
       summary: Get stream with invite code
       tags:
       - Stream
+  /stream/register/{code}:
+    post:
+      consumes:
+      - application/json
+      description: create student account
+      parameters:
+      - description: Invite code
+        in: path
+        name: code
+        required: true
+        type: integer
+      - description: Registration data
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Create student account
+      tags:
+      - Stream
   /user/login:
     post:
       consumes:

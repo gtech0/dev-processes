@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"dev-processes/database"
 	"dev-processes/dto"
-	"dev-processes/initializer"
 	"dev-processes/model"
 	"dev-processes/service"
 	"github.com/gin-gonic/gin"
 	"github.com/guregu/null/v5"
+	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -52,7 +53,7 @@ func (s *StreamController) CreateStream(ctx *gin.Context) {
 		Code: generateRandString(),
 	}
 
-	result := initializer.DB.Create(&stream)
+	result := database.DB.Create(&stream)
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create stream " + stream.Name,
@@ -84,7 +85,7 @@ func (s *StreamController) GetStreamNames(ctx *gin.Context) {
 	}
 
 	var streams []dto.StreamDto
-	err := initializer.DB.Model(model.Stream{}).Order("created_at asc").Find(&streams).Error
+	err := database.DB.Model(model.Stream{}).Order("created_at asc").Find(&streams).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -117,7 +118,7 @@ func (s *StreamController) CreateInviteCode(ctx *gin.Context) {
 
 	streamName := ctx.Param("streamName")
 	var code dto.InviteCodeDto
-	err := initializer.DB.Model(model.Stream{}).Where(&model.Stream{Name: streamName}).First(&code).Error
+	err := database.DB.Model(model.Stream{}).Where(&model.Stream{Name: streamName}).First(&code).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -144,7 +145,7 @@ func (s *StreamController) GetStreamByCode(ctx *gin.Context) {
 	code := ctx.Param("code")
 
 	var stream model.Stream
-	err := initializer.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).First(&stream).Error
+	err := database.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).First(&stream).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -154,7 +155,7 @@ func (s *StreamController) GetStreamByCode(ctx *gin.Context) {
 	var streamDto dto.StreamGetDto
 	streamDto.Name = stream.Name
 
-	err = initializer.DB.Model(model.User{}).Where(&model.User{StreamName: null.StringFrom(stream.Name)}).Count(&streamDto.PeopleNum).Error
+	err = database.DB.Model(model.User{}).Where(&model.User{StreamName: null.StringFrom(stream.Name)}).Count(&streamDto.PeopleNum).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -180,4 +181,79 @@ func generateRandString() string {
 	}
 
 	return string(b)
+}
+
+// RegisterUserInStream godoc
+// @Tags         Stream
+// @Summary      Create student account
+// @Description  create student account
+// @Accept       json
+// @Produce      json
+// @Param        code path int true "Invite code"
+// @Param   	 payload body dto.UserDto false "Registration data"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /stream/register/{code} [post]
+func (*StreamController) RegisterUserInStream(ctx *gin.Context) {
+	body := dto.StudentDto{}
+
+	if err := ctx.Bind(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if len(body.Login) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "login required",
+		})
+		return
+	}
+
+	if len(body.Password) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "password required",
+		})
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	code := ctx.Param("code")
+
+	var stream model.Stream
+	err = database.DB.Model(model.Stream{}).Where(&model.Stream{Code: code}).First(&stream).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	user := model.User{
+		Name:        body.Name,
+		Surname:     body.Surname,
+		Login:       body.Login,
+		Password:    string(hash),
+		Role:        model.Student,
+		Deactivated: false,
+		StreamName:  null.StringFrom(stream.Name),
+		Comment:     null.StringFromPtr(nil),
+	}
+
+	result := database.DB.Create(&user)
+	if result.Error != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to create user",
+		})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

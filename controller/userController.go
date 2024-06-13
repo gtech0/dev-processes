@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"dev-processes/database"
 	"dev-processes/dto"
-	"dev-processes/initializer"
 	"dev-processes/model"
 	"dev-processes/service"
 	"errors"
@@ -75,7 +75,7 @@ func (*UserController) Signup(ctx *gin.Context) {
 		Comment:     null.StringFromPtr(nil),
 	}
 
-	result := initializer.DB.Create(&user)
+	result := database.DB.Create(&user)
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create user",
@@ -107,7 +107,7 @@ func (*UserController) Login(ctx *gin.Context) {
 	}
 
 	var user model.User
-	initializer.DB.Where(&model.User{Login: body.Login}).First(&user)
+	database.DB.Where(&model.User{Login: body.Login}).First(&user)
 
 	if user.ID == 0 {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -225,7 +225,7 @@ func (u *UserController) Logout(ctx *gin.Context) {
 		})
 	}
 
-	initializer.DB.Model(model.Token{}).Where(model.Token{Token: tokenString}).Updates(model.Token{Revoked: true})
+	database.DB.Model(model.Token{}).Where(model.Token{Token: tokenString}).Updates(model.Token{Revoked: true})
 }
 
 // ChangePassword godoc
@@ -273,7 +273,7 @@ func (u *UserController) ChangePassword(ctx *gin.Context) {
 		return
 	}
 
-	err = initializer.DB.Model(model.User{}).Where(user.(model.User).ID).Updates(model.User{Password: string(hash)}).Error
+	err = database.DB.Model(model.User{}).Where(user.(model.User).ID).Updates(model.User{Password: string(hash)}).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -302,7 +302,7 @@ func createToken(user model.User, tokenType string) (string, error) {
 		return tokenString, nil
 	}
 
-	if err = initializer.DB.Save(&model.Token{
+	if err = database.DB.Save(&model.Token{
 		UserID:  user.ID,
 		Token:   tokenString,
 		Revoked: false,
@@ -314,7 +314,7 @@ func createToken(user model.User, tokenType string) (string, error) {
 }
 
 func revokeAllUserTokens(userId uint) error {
-	err := initializer.DB.Model(model.Token{}).Where(&model.Token{UserID: userId}).Updates(model.Token{Revoked: true}).Error
+	err := database.DB.Model(model.Token{}).Where(&model.Token{UserID: userId}).Updates(model.Token{Revoked: true}).Error
 	if err != nil {
 		return err
 	}

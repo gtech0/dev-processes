@@ -241,6 +241,49 @@
                 }
             }
         },
+        "/stream/register/{code}": {
+            "post": {
+                "description": "create student account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stream"
+                ],
+                "summary": "Create student account",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invite code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Registration data",
+                        "name": "payload",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "description": "login in account",

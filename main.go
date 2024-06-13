@@ -2,8 +2,9 @@ package main
 
 import (
 	"dev-processes/controller"
+	"dev-processes/database"
 	_ "dev-processes/docs"
-	"dev-processes/initializer"
+	"dev-processes/enviroment"
 	"dev-processes/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -13,9 +14,9 @@ import (
 )
 
 func init() {
-	initializer.LoadEnv()
-	initializer.ConnectToDB()
-	initializer.SyncDatabase()
+	enviroment.LoadEnv()
+	database.ConnectToDB()
+	database.SyncDatabase()
 }
 
 // @title           User API
@@ -45,6 +46,7 @@ func main() {
 
 	userController := controller.NewUserController()
 	streamController := controller.NewStreamController()
+
 	user := router.Group("/api/user")
 	{
 		user.POST("/signup", userController.Signup)
@@ -60,6 +62,7 @@ func main() {
 		stream.GET("/get", middleware.RequireAuth, streamController.GetStreamNames)
 		stream.POST("/create/:streamName", middleware.RequireAuth, streamController.CreateInviteCode)
 		stream.GET("/get/:code", middleware.RequireAuth, streamController.GetStreamByCode)
+		stream.POST("/register/:code", streamController.RegisterUserInStream)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

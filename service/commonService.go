@@ -1,7 +1,7 @@
 package service
 
 import (
-	"dev-processes/initializer"
+	"dev-processes/database"
 	"dev-processes/model"
 	"errors"
 	"fmt"
@@ -28,7 +28,7 @@ func ValidateRefreshToken(ctx *gin.Context, tokenString string) error {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		var user model.User
-		initializer.DB.First(&user, claims["sub"])
+		database.DB.First(&user, claims["sub"])
 		if user.ID == 0 {
 			return errors.New("user not found")
 		}
@@ -64,10 +64,8 @@ func IsCorrectRole(ctx *gin.Context, role model.Role) bool {
 	}
 
 	if user.(model.User).Role != role {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized access",
-		})
 		return false
 	}
+
 	return true
 }

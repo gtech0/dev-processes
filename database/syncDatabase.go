@@ -1,4 +1,4 @@
-package initializer
+package database
 
 import (
 	"dev-processes/model"
