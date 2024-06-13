@@ -22,6 +22,7 @@ func NewUserController() *UserController {
 }
 
 // Signup godoc
+// @Tags         User
 // @Summary      Create admin account
 // @Description  create admin account
 // @Accept       json
@@ -83,6 +84,7 @@ func (*UserController) Signup(ctx *gin.Context) {
 }
 
 // Login godoc
+// @Tags         User
 // @Summary      Login
 // @Description  login in account
 // @Accept       json
@@ -150,6 +152,7 @@ func (*UserController) Login(ctx *gin.Context) {
 }
 
 // RefreshToken godoc
+// @Tags         User
 // @Summary      Refresh
 // @Description  refresh token
 // @Accept       json
@@ -200,6 +203,7 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 }
 
 // Logout godoc
+// @Tags         User
 // @Security 	 Bearer
 // @Summary      Logout
 // @Description  logout
@@ -222,6 +226,7 @@ func (u *UserController) Logout(ctx *gin.Context) {
 }
 
 // ChangePassword godoc
+// @Tags         User
 // @Security 	 Bearer
 // @Summary      Change password
 // @Description  change your password

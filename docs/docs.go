@@ -24,7 +24,63 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/stream/create": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create student stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stream"
+                ],
+                "summary": "Create student stream",
+                "parameters": [
+                    {
+                        "description": "stream name",
+                        "name": "payload",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/dto.StreamDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/login": {
             "post": {
                 "description": "login in account",
                 "consumes": [
@@ -32,6 +88,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "User"
                 ],
                 "summary": "Login",
                 "parameters": [
@@ -57,7 +116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/logout": {
+        "/user/logout": {
             "post": {
                 "security": [
                     {
@@ -67,6 +126,9 @@ const docTemplate = `{
                 "description": "logout",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "User"
                 ],
                 "summary": "Logout",
                 "responses": {
@@ -100,7 +162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/password": {
+        "/user/password": {
             "patch": {
                 "security": [
                     {
@@ -113,6 +175,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "User"
                 ],
                 "summary": "Change password",
                 "parameters": [
@@ -144,7 +209,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/refresh": {
+        "/user/refresh": {
             "post": {
                 "description": "refresh token",
                 "consumes": [
@@ -152,6 +217,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "User"
                 ],
                 "summary": "Refresh",
                 "parameters": [
@@ -177,16 +245,19 @@ const docTemplate = `{
                 }
             }
         },
-        "/signup": {
+        "/user/signup": {
             "post": {
-                "description": "create user account",
+                "description": "create admin account",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create account",
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create admin account",
                 "parameters": [
                     {
                         "description": "Auth data",
@@ -224,6 +295,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StreamDto": {
+            "type": "object",
+            "properties": {
+                "streamName": {
                     "type": "string"
                 }
             }

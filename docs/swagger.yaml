@@ -10,6 +10,11 @@ definitions:
       refreshToken:
         type: string
     type: object
+  dto.StreamDto:
+    properties:
+      streamName:
+        type: string
+    type: object
   dto.UserDto:
     properties:
       login:
@@ -38,7 +43,42 @@ info:
   title: User API
   version: "0.01"
 paths:
-  /login:
+  /stream/create:
+    post:
+      description: create student stream
+      parameters:
+      - description: stream name
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/dto.StreamDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create student stream
+      tags:
+      - Stream
+  /user/login:
     post:
       consumes:
       - application/json
@@ -59,7 +99,9 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Login
-  /logout:
+      tags:
+      - User
+  /user/logout:
     post:
       description: logout
       produces:
@@ -86,7 +128,9 @@ paths:
       security:
       - Bearer: []
       summary: Logout
-  /password:
+      tags:
+      - User
+  /user/password:
     patch:
       consumes:
       - application/json
@@ -113,7 +157,9 @@ paths:
       security:
       - Bearer: []
       summary: Change password
-  /refresh:
+      tags:
+      - User
+  /user/refresh:
     post:
       consumes:
       - application/json
@@ -134,11 +180,13 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Refresh
-  /signup:
+      tags:
+      - User
+  /user/signup:
     post:
       consumes:
       - application/json
-      description: create user account
+      description: create admin account
       parameters:
       - description: Auth data
         in: body
@@ -154,7 +202,9 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
-      summary: Create account
+      summary: Create admin account
+      tags:
+      - User
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and JWT token.

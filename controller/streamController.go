@@ -18,10 +18,12 @@ func NewStreamController() *StreamController {
 }
 
 // CreateStream godoc
+// @Tags         Stream
 // @Security 	 Bearer
 // @Summary      Create student stream
 // @Description  create student stream
 // @Produce      json
+// @Param   	 payload body dto.StreamDto false "stream name"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
 // @Failure      401 {object} model.ErrorResponse
