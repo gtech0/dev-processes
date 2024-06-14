@@ -284,10 +284,58 @@ func (*StreamController) DeleteStudentFromStream(ctx *gin.Context) {
 	}
 
 	if err = database.DB.Model(model.User{}).
-		Where("stream_name = ? AND id IN ?", null.StringFrom(streamName), body).
+		Where("stream_name = ? AND id IN ?", streamName, body).
 		Update("stream_name", null.StringFromPtr(nil)).Error; err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+// LeaveStream godoc
+// @Tags         Stream
+// @Summary      Leave from stream
+// @Description  student can leave from stream
+// @Accept       json
+// @Produce      json
+// @Param        streamName path int true "Stream name"
+// @Success      200
+// @Failure      400 {object} model.ErrorResponse
+// @Router       /stream/leave/{streamName} [post]
+func (*StreamController) LeaveStream(ctx *gin.Context) {
+	if err := service.IsCorrectRole(ctx, model.Student); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	userCtx, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "User not found in context",
+		})
+		return
+	}
+
+	streamName := ctx.Param("streamName")
+
+	var stream model.Stream
+	if err := database.DB.Model(model.Stream{}).Where("name = ?", streamName).First(&stream).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if database.DB.Model(model.User{}).
+		Where("stream_name = ? AND id = ?", streamName, userCtx.(model.User).ID).
+		Update("stream_name", null.StringFromPtr(nil)).RowsAffected == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "User not found in this stream",
 		})
 		return
 	}

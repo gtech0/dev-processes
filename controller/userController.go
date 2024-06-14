@@ -213,9 +213,6 @@ func (*UserController) RefreshToken(ctx *gin.Context) {
 // @Produce      json
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      401 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
-// @Failure      500 {object} model.ErrorResponse
 // @Router       /user/logout [post]
 func (u *UserController) Logout(ctx *gin.Context) {
 	tokenString, err := service.ExtractToken(ctx.GetHeader("Authorization"))
@@ -238,7 +235,6 @@ func (u *UserController) Logout(ctx *gin.Context) {
 // @Param   	 payload body dto.PasswordDto false "New password"
 // @Success      200
 // @Failure      400 {object} model.ErrorResponse
-// @Failure      403 {object} model.ErrorResponse
 // @Router       /user/password [patch]
 func (u *UserController) ChangePassword(ctx *gin.Context) {
 	user, exists := ctx.Get("user")

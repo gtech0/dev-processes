@@ -186,6 +186,29 @@ paths:
       summary: Get stream with invite code
       tags:
       - Stream
+  /stream/leave/{streamName}:
+    post:
+      consumes:
+      - application/json
+      description: student can leave from stream
+      parameters:
+      - description: Stream name
+        in: path
+        name: streamName
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Leave from stream
+      tags:
+      - Stream
   /stream/register/{code}:
     post:
       consumes:
@@ -249,18 +272,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
       security:
       - Bearer: []
       summary: Logout
@@ -284,10 +295,6 @@ paths:
           description: OK
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       security:
